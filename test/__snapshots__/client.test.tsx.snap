@@ -1,0 +1,32 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Client 1`] = `
+NodeList [
+  <div
+    id="data1"
+  >
+    100
+  </div>,
+  <div
+    id="data2"
+  >
+    300
+  </div>,
+  <div
+    id="data3"
+  >
+    error
+  </div>,
+  <div
+    id="data4"
+  >
+    data4
+  </div>,
+  <script
+    id="__NEXT_DATA_PROMISE__"
+    type="application/json"
+  >
+    {":R5:":{"data":100,"isLoading":false},"Component02":{"data":200,"isLoading":false},"Component03":{"error":"error","isLoading":false},":r0:":{"isLoading":true}}
+  </script>,
+]
+`;
