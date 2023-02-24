@@ -14,7 +14,7 @@ type StateType<T> = { data?: T; error?: unknown; isLoading: boolean; fetcher: ()
 type Render = () => void;
 type ContextType = {
   values: { [key: string]: StateType<unknown> };
-  promises: Promise<unknown>[];
+  promises: Set<Promise<unknown>>;
   finished: boolean;
   renderMap: Map<string | number, Set<Render>>;
 };
@@ -42,7 +42,7 @@ const loader = <T,>(key: string | number, context: ContextType, fetcher?: () => 
   render(renderMap, key);
   const promise = _fetcher();
   if (typeof window === 'undefined') {
-    promises.push(promise);
+    promises.add(promise);
   }
   promise
     .then((v) => {
@@ -109,11 +109,16 @@ export const useSSR = <T,>(
  */
 const DataRender = () => {
   const context = useContext(promiseContext);
-  if (typeof window === 'undefined' && !context.finished)
-    throw Promise.allSettled(context.promises).then((v) => {
-      context.finished = true;
-      return v;
-    });
+  if (typeof window === 'undefined' && !context.finished) {
+    let length: number;
+    while ((length = context.promises.size)) {
+      throw Promise.allSettled(context.promises).then(() => {
+        if (length === context.promises.size) {
+          context.promises.clear();
+        }
+      });
+    }
+  }
   return (
     <script
       id={DATA_NAME}
@@ -129,7 +134,7 @@ const DataRender = () => {
 const useContextValue = () => {
   const refContext = useRef<ContextType>({
     values: {},
-    promises: [],
+    promises: new Set(),
     finished: false,
     renderMap: new Map<string, Set<Render>>(),
   });
