@@ -4,12 +4,14 @@
 
 Library for easy SSR of data obtained from asynchronous in Next.js.
 
-Very easy. You do not need the following.  
- ~~`getServerSideProps`~~ , ~~`getInitialProps`~~ , ~~`React Server Components`~~.
+Very easy, You do not need the following.  
+ ~~`getServerSideProps`~~ , ~~`getInitialProps`~~ , ~~`React Server Components`~~ , ~~`appDir`~~.
+
+## URL of sample program
+
+<https://next-use-ssr.vercel.app/>
 
 ## usage
-
-`<SSRProvider>` in combination with `useSSR`.
 
 ```ts
 import { SSRProvider, useSSR } from 'next-ssr';
@@ -20,17 +22,19 @@ import { SSRProvider, useSSR } from 'next-ssr';
 ```
 
 ```ts
-// data:  Data received from fetch.
-// error: Errors thrown by fetch.
-// reload: Used when re-calling fetch.
-// isLoading: `true` if loading.
-const {data,error,reload,isLoading} = useSSR<T>(
-  // Process to return Proimise<T>.
-  ()=>fetch(...),
+/**
+ * data:  Data received from fetch.
+ * error: Errors thrown by fetch.
+ * reload: Used when re-calling fetch.
+ * isLoading: `true` if loading.
+ */
+const { data, error, reload, isLoading } = useSSR<T>(
+  // Function returning 'Proimise<T>'.
+  fetcher,
   // key: If omitted, the value of useId() is used.
   //      However, note that nesting causes malfunctions.
   {
-    key: "key-value"
+    key: 'key-value',
   }
 );
 ```
@@ -45,18 +49,17 @@ Asynchronous data is rendered as-is in components on the server.
 import { SSRProvider, useSSR } from 'next-ssr';
 
 /**
- * Components for displaying weather information
+ * Return time asynchronously
  */
 const Test = () => {
   // The return value of async is SSRed.
-  const { data } = useSSR(async () => new Date().toLocaleString('en-US', { timeZone: 'UTC' }));
+  const { data } = useSSR(async () => 'Hello world!');
   return <div>{data}</div>;
 };
 
 /**
  * Page display components
  */
-
 const Page = () => {
   return (
     <SSRProvider>
@@ -124,8 +127,6 @@ const Weather = ({ code }: { code: number }) => {
 const Page = () => {
   return (
     <SSRProvider>
-      <a href="https://github.com/SoraKumo001/next-use-ssr">Source Code</a>
-      <hr />
       {/* Chiba  */}
       <Weather code={120000} />
       {/* Tokyo */}
