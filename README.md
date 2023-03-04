@@ -11,34 +11,6 @@ Very easy, You do not need the following.
 
 <https://next-use-ssr.vercel.app/>
 
-## usage
-
-```ts
-import { SSRProvider, useSSR } from 'next-ssr';
-```
-
-```tsx
-<SSRProvider>{/*Components containing useSSR.*/}</SSRProvider>
-```
-
-```ts
-/**
- * data:  Data received from fetch.
- * error: Errors thrown by fetch.
- * reload: Used when re-calling fetch.
- * isLoading: `true` if loading.
- */
-const { data, error, reload, isLoading } = useSSR<T>(
-  // Function returning 'Proimise<T>'.
-  fetcher,
-  // key: If omitted, the value of useId() is used.
-  //      However, note that nesting causes malfunctions.
-  {
-    key: 'key-value',
-  }
-);
-```
-
 ## Easiest example.
 
 Asynchronous data is rendered as-is in components on the server.
@@ -68,6 +40,51 @@ const Page = () => {
   );
 };
 export default Page;
+```
+
+## usage
+
+```ts
+import { SSRProvider, useSSR } from 'next-ssr';
+```
+
+```tsx
+<SSRProvider>{/*Components containing useSSR.*/}</SSRProvider>
+```
+
+```ts
+/**
+ * data:  Data received from fetch.
+ * error: Errors thrown by fetch.
+ * reload: Used when re-calling fetch.
+ * isLoading: `true` if loading.
+ */
+const { data, error, reload, isLoading } = useSSR<T>(
+  // Function returning 'Proimise<T>'.
+  fetcher,
+  // key: If omitted, the value of useId() is used.
+  //      However, note that nesting causes malfunctions.
+  {
+    key: 'key-value',
+  }
+);
+```
+
+## For dynamic updates
+
+If you constantly need new data on the server, you must disable Next.js static optimization.
+
+\_app.tsx
+
+```tsx
+import type { AppType } from 'next/app';
+
+const App: AppType = ({ Component, pageProps }) => <Component {...pageProps} />;
+
+// Create getInitialProps that do nothing to prevent Next.js optimisation.
+App.getInitialProps = () => ({});
+
+export default App;
 ```
 
 ## Samples of performing fetch.
