@@ -57,6 +57,11 @@ const Component03 = () => {
   return <div id="data3">{String(error)}</div>;
 };
 
+const Component04 = () => {
+  const { data } = useSSR<number>(async () => 100, { key: 'Component04' });
+  return <div id="data4">{data}</div>;
+};
+
 const render = (element: ReactNode) =>
   new Promise<string>((resolve, reject) => {
     const stream = renderToPipeableStream(element, {
@@ -85,5 +90,18 @@ it('SSR', async () => {
   expect(document.getElementById('data1')?.innerHTML).toBe('100');
   expect(document.getElementById('data2')?.innerHTML).toBe('200');
   expect(document.getElementById('data3')?.innerHTML).toBe('error');
+  expect(stream).toMatchSnapshot();
+});
+
+it('SSR2', async () => {
+  const stream = await render(
+    <SSRProvider>
+      <Component04 />
+      <Component04 />
+      <Component04 />
+    </SSRProvider>
+  );
+  const document = new JSDOM(stream).window.document;
+  expect(document.getElementById('data4')?.innerHTML).toBe('100');
   expect(stream).toMatchSnapshot();
 });

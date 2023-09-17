@@ -1,3 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`SSR 1`] = `"<div id="data1">100</div><div id="data2">200</div><div id="data3">error</div><script id="__NEXT_DATA_PROMISE__" type="application/json">{":R5:":{"data":100,"isLoading":false},"Component02":{"data":200,"isLoading":false},"Component03":{"error":"error","isLoading":false}}</script>"`;
+
+exports[`SSR2 1`] = `"<div id="data4">100</div><div id="data4">100</div><div id="data4">100</div><script id="__NEXT_DATA_PROMISE__" type="application/json">{"Component04":{"data":100,"isLoading":false}}</script>"`;

@@ -10,7 +10,13 @@ import React, {
 
 const DATA_NAME = '__NEXT_DATA_PROMISE__';
 
-type StateType<T> = { data?: T; error?: unknown; isLoading: boolean; fetcher: () => Promise<T> };
+type StateType<T> = {
+  data?: T;
+  error?: unknown;
+  isLoading: boolean;
+  fetcher: () => Promise<T>;
+  promise?: Promise<T>;
+};
 type Render = () => void;
 type ContextType = {
   values: { [key: string]: StateType<unknown> };
@@ -37,20 +43,36 @@ const loader = <T,>(key: string | number, context: ContextType, fetcher?: () => 
   const { promises, values, renderMap } = context;
   const _fetcher = fetcher ?? values[key]?.fetcher;
   if (!_fetcher) throw new Error('Empty by fetcher');
-  const value = { data: values[key]?.data, error: undefined, isLoading: true, fetcher: _fetcher };
+  const value: StateType<T> = {
+    data: values[key]?.data as T,
+    error: undefined,
+    isLoading: true,
+    fetcher: _fetcher as () => Promise<T>,
+  };
   values[key] = value;
   render(renderMap, key);
   const promise = _fetcher();
+  value.promise = promise as Promise<T>;
   if (typeof window === 'undefined') {
     promises.add(promise);
   }
   promise
     .then((v) => {
-      values[key] = { data: v, error: undefined, isLoading: false, fetcher: _fetcher };
+      values[key] = {
+        data: v,
+        error: undefined,
+        isLoading: false,
+        fetcher: _fetcher,
+      };
       render(renderMap, key);
     })
     .catch((error) => {
-      values[key] = { data: undefined, error, isLoading: false, fetcher: _fetcher };
+      values[key] = {
+        data: undefined,
+        error,
+        isLoading: false,
+        fetcher: _fetcher,
+      };
       render(renderMap, key);
     });
   return promise;
@@ -97,6 +119,8 @@ export const useSSR = <T,>(
     if (typeof window === 'undefined') {
       throw promise;
     }
+  } else if (value.isLoading) {
+    if (typeof window === 'undefined') throw value.promise;
   } else if (!value.fetcher) {
     value.fetcher = fetcher;
   }

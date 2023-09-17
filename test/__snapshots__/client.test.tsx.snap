@@ -26,7 +26,7 @@ NodeList [
     id="__NEXT_DATA_PROMISE__"
     type="application/json"
   >
-    {":R5:":{"data":100,"isLoading":false},"Component02":{"data":200,"isLoading":false},"Component03":{"error":"error","isLoading":false},":r0:":{"isLoading":true}}
+    {":R5:":{"data":100,"isLoading":false},"Component02":{"data":200,"isLoading":false},"Component03":{"error":"error","isLoading":false},":r0:":{"isLoading":true,"promise":{}}}
   </script>,
 ]
 `;
