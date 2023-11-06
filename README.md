@@ -3,6 +3,7 @@
 ## overview
 
 Library for easy SSR of data obtained from asynchronous in Next.js.
+SSR can be performed from PagesRouter and AppRouter's ClientComponents.
 
 Very easy, You do not need the following.  
  ~~`getServerSideProps`~~ , ~~`getInitialProps`~~ , ~~`React Server Components`~~ , ~~`appDir`~~.

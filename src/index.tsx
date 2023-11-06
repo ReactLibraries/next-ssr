@@ -1,3 +1,5 @@
+'use client';
+
 import React, {
   ReactNode,
   useContext,
@@ -153,7 +155,7 @@ const DataRender = () => {
 };
 
 /**
- * Context data initialisation hook
+ * Context data initialization hook
  */
 const useContextValue = () => {
   const refContext = useRef<ContextType>({

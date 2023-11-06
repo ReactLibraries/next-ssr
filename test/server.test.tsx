@@ -64,7 +64,7 @@ const Component04 = () => {
 
 const render = (element: ReactNode) =>
   new Promise<string>((resolve, reject) => {
-    const stream = renderToPipeableStream(element, {
+    const stream = renderToPipeableStream(<>{element}</>, {
       onError(error) {
         reject(error);
       },
