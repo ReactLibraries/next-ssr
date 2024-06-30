@@ -3,8 +3,8 @@
  */
 
 import React, { useEffect } from 'react';
+import { act } from 'react';
 import { createRoot } from 'react-dom/client';
-import { act } from 'react-dom/test-utils';
 import { SSRProvider, useReload, useSSR } from '../src';
 
 let prev;

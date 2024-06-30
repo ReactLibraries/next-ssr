@@ -149,7 +149,7 @@ const DataRender = () => {
     <script
       id={DATA_NAME}
       type="application/json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(context.values) }}
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(context.values).replace(/</g, '\\u003c') }}
     />
   );
 };
