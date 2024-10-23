@@ -5,12 +5,9 @@
 Library for easy SSR of data obtained from asynchronous in Next.js.
 SSR can be performed from PagesRouter and AppRouter's ClientComponents.
 
-Very easy, You do not need the following.  
- ~~`getServerSideProps`~~ , ~~`getInitialProps`~~ , ~~`React Server Components`~~ , ~~`appDir`~~.
-
 ## URL of sample program
 
-<https://next-use-ssr.vercel.app/>
+<https://next-ssr-pokemon.vercel.app/>
 
 ## Easiest example.
 
@@ -19,14 +16,14 @@ Asynchronous data is rendered as-is in components on the server.
 - pages/simple.tsx
 
 ```tsx
-import { SSRProvider, useSSR } from 'next-ssr';
+import { SSRProvider, useSSR } from "next-ssr";
 
 /**
  * Return time asynchronously
  */
 const Test = () => {
   // The return value of async is SSRed.
-  const { data } = useSSR(async () => 'Hello world!');
+  const { data } = useSSR(async () => "Hello world!");
   return <div>{data}</div>;
 };
 
@@ -46,12 +43,23 @@ export default Page;
 ## usage
 
 ```ts
-import { SSRProvider, useSSR } from 'next-ssr';
+import { SSRProvider, useSSR } from "next-ssr";
 ```
 
+- Add `SSRProvider` to Layout.
+
 ```tsx
-<SSRProvider>{/*Components containing useSSR.*/}</SSRProvider>
+<html lang="en">
+  <SSRProvider>
+    <head>
+      <SSRHeadRoot />
+    </head>
+    <body>{children}</body>
+  </SSRProvider>
+</html>
 ```
+
+- Asynchronous data used for SSR is obtained by useSSR
 
 ```ts
 /**
@@ -66,92 +74,189 @@ const { data, error, reload, isLoading } = useSSR<T>(
   // key: If omitted, the value of useId() is used.
   //      However, note that nesting causes malfunctions.
   {
-    key: 'key-value',
+    key: "key-value",
   }
 );
 ```
 
-## For dynamic updates
-
-If you constantly need new data on the server, you must disable Next.js static optimization.
-
-\_app.tsx
+- Use `<SSRHead>` to manipulate data in `<head>` in components
 
 ```tsx
-import type { AppType } from 'next/app';
-
-const App: AppType = ({ Component, pageProps }) => <Component {...pageProps} />;
-
-// Create getInitialProps that do nothing to prevent Next.js optimisation.
-App.getInitialProps = () => ({});
-
-export default App;
+<SSRHead>
+  <title>Title</title>
+</SSRHead>
 ```
 
-## Samples of performing fetch.
+##
 
-- pages/index.tsx
+## Example
+
+- src/layout/Layout.tsx
 
 ```tsx
-import { SSRProvider, useSSR } from 'next-ssr';
+import { SSRHeadRoot, SSRProvider } from "next-ssr";
+import { headers } from "next/headers";
 
-export interface WeatherType {
-  publishingOffice: string;
-  reportDatetime: string;
-  targetArea: string;
-  headlineText: string;
-  text: string;
-}
-
-/**
- * Data obtained from the JMA website.
- */
-const fetchWeather = (id: number): Promise<WeatherType> =>
-  fetch(`https://www.jma.go.jp/bosai/forecast/data/overview_forecast/${id}.json`)
-    .then((r) => r.json())
-    .then(
-      // Additional weights (500 ms)
-      (r) => new Promise((resolve) => setTimeout(() => resolve(r), 500))
-    );
-
-/**
- * Components for displaying weather information
- */
-const Weather = ({ code }: { code: number }) => {
-  const { data, reload, isLoading } = useSSR<WeatherType>(() => fetchWeather(code), { key: code });
-  if (!data) return <div>loading</div>;
-  const { targetArea, reportDatetime, headlineText, text } = data;
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  headers();
   return (
-    <div style={isLoading ? { background: 'gray', position: 'relative' } : undefined}>
-      {isLoading && (
-        <div style={{ position: 'absolute', color: 'white', top: '50%', left: '50%' }}>loading</div>
-      )}
-      <h1>{targetArea}</h1>
-      <button onClick={reload}>Reload</button>
-      <div>
-        {new Date(reportDatetime).toLocaleString('ja-JP', {
-          timeZone: 'JST',
-        })}
-      </div>
-      <div>{headlineText}</div>
-      <div style={{ whiteSpace: 'pre-wrap' }}>{text}</div>
-    </div>
+    <html lang="en">
+      <SSRProvider>
+        <head>
+          <SSRHeadRoot />
+        </head>
+        <body>{children}</body>
+      </SSRProvider>
+    </html>
   );
+}
+```
+
+- src/app/[page]/page.tsx
+
+```tsx
+"use client";
+import { SSRHead, useSSR } from "next-ssr";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+
+type PokemonList = {
+  count: number;
+  next: string;
+  previous: string | null;
+  results: { name: string; url: string }[];
 };
 
-/**
- * Page display components
- */
+const pokemonList = (page: number): Promise<PokemonList> =>
+  fetch(`https://pokeapi.co/api/v2/pokemon/?offset=${(page - 1) * 20}`).then(
+    (r) => r.json()
+  );
+
 const Page = () => {
+  const params = useParams();
+  const page = Number(params["page"] ?? 1);
+  const { data } = useSSR(() => pokemonList(page), {
+    key: `pokemon-list-${page}`,
+  });
+  if (!data) return <div>loading</div>;
   return (
-    <SSRProvider>
-      {/* Chiba  */}
-      <Weather code={120000} />
-      {/* Tokyo */}
-      <Weather code={130000} />
-      {/* Kanagawa */}
-      <Weather code={140000} />
-    </SSRProvider>
+    <>
+      <SSRHead>
+        <title>Pokemon List</title>
+      </SSRHead>
+      <div style={{ display: "flex", gap: "8px", padding: "8px" }}>
+        <Link
+          href={page > 1 ? `/${page - 1}` : ""}
+          style={{
+            textDecoration: "none",
+            padding: "8px",
+            boxShadow: "0 0 8px rgba(0, 0, 0, 0.1)",
+          }}
+        >
+          ⏪️
+        </Link>
+        <Link
+          href={page < Math.ceil(data.count / 20) ? `/${page + 1}` : ""}
+          style={{
+            textDecoration: "none",
+            padding: "8px",
+            boxShadow: "0 0 8px rgba(0, 0, 0, 0.1)",
+          }}
+        >
+          ⏩️
+        </Link>
+      </div>
+      <hr style={{ margin: "24px 0" }} />
+      <div>
+        {data.results.map(({ name }) => (
+          <div key={name}>
+            <Link href={`/pokemon/${name}`}>{name}</Link>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+};
+export default Page;
+```
+
+- src/app/pokemon/[name]/page.tsx
+
+```tsx
+"use client";
+import { SSRHead, useSSR } from "next-ssr";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+
+type Pokemon = {
+  abilities: { ability: { name: string; url: string } }[];
+  base_experience: number;
+  height: number;
+  id: number;
+  name: string;
+  order: number;
+  species: { name: string; url: string };
+  sprites: {
+    back_default: string;
+    back_female: string;
+    back_shiny: string;
+    back_shiny_female: string;
+    front_default: string;
+    front_female: string;
+    front_shiny: string;
+    front_shiny_female: string;
+  };
+  weight: number;
+};
+
+const pokemon = (name: string): Promise<Pokemon> =>
+  fetch(`https://pokeapi.co/api/v2/pokemon/${name}`).then((r) => r.json());
+
+const Page = () => {
+  const params = useParams();
+  const name = String(params["name"]);
+  const { data } = useSSR(() => pokemon(name), {
+    key: `pokemon-${name}`,
+  });
+  if (!data) return <div>loading</div>;
+  return (
+    <>
+      <SSRHead>
+        <title>{name}</title>
+      </SSRHead>
+      <div style={{ padding: "8px" }}>
+        <Link
+          href="/1"
+          style={{
+            textDecoration: "none",
+            padding: "8px 32px",
+            boxShadow: "0 0 8px rgba(0, 0, 0, 0.1)",
+            borderRadius: "8px",
+          }}
+        >
+          ⏪️List
+        </Link>
+      </div>
+      <hr style={{ margin: "24px 0" }} />
+      <div
+        style={{
+          display: "inline-flex",
+          flexDirection: "column",
+          alignItems: "center",
+          padding: "8px",
+        }}
+      >
+        <img
+          style={{ boxShadow: "0 0 8px rgba(0, 0, 0, 0.5)" }}
+          src={data.sprites.front_default}
+        />
+        <div>{name}</div>
+      </div>
+    </>
   );
 };
 export default Page;
