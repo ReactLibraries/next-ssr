@@ -43,21 +43,39 @@ export default Page;
 ## usage
 
 ```ts
-import { SSRProvider, useSSR } from "next-ssr";
+import { SSRProvider, SSRBodyRoot, useSSR } from "next-ssr";
 ```
 
 - Add `SSRProvider` to Layout.
 
-```tsx
-<html lang="en">
-  <SSRProvider>
-    <head>
-      <SSRHeadRoot />
-    </head>
-    <body>{children}</body>
-  </SSRProvider>
-</html>
-```
+  - React@19
+
+    ```tsx
+    <html lang="en">
+      <SSRProvider>
+        <head>
+          <SSRHeadRoot />
+        </head>
+        <body>{children}</body>
+      </SSRProvider>
+    </html>
+    ```
+
+  - React@18
+
+    ```tsx
+    <html lang="en">
+      <SSRProvider autoRoot={false}>
+        <head>
+          <SSRHeadRoot />
+        </head>
+        <body>
+          {children}
+          <SSRBodyRoot />
+        </body>
+      </SSRProvider>
+    </html>
+    ```
 
 - Asynchronous data used for SSR is obtained by useSSR
 
@@ -86,8 +104,6 @@ const { data, error, reload, isLoading } = useSSR<T>(
   <title>Title</title>
 </SSRHead>
 ```
-
-##
 
 ## Example
 

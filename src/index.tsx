@@ -169,7 +169,7 @@ const DataRender = () => {
     />
   );
 };
-export const SSRDataRender = () => {
+export const SSRBodyRoot = () => {
   const ssrContext = useContext(promiseContext);
   if (ssrContext.isDataRender) return null;
   ssrContext.isDataRender = true;
@@ -202,13 +202,19 @@ const useContextValue = () => {
 /**
  * Provider for asynchronous data management
  */
-export const SSRProvider = ({ children }: { children: ReactNode }) => {
+export const SSRProvider = ({
+  children,
+  autoRoot = true,
+}: {
+  autoRoot?: boolean;
+  children: ReactNode;
+}) => {
   const value = useContextValue();
   return (
     <SSRHeadProvider>
       <promiseContext.Provider value={value}>
         {children}
-        <SSRDataRender />
+        {autoRoot && <SSRBodyRoot />}
       </promiseContext.Provider>
     </SSRHeadProvider>
   );
